@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AY YILDIZ RUST | Türkiye'nin En İyisi</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="img/logo.png">
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav>
+        <div class="nav-brand">
+            <img src="img/logo.png" alt="Ay Yildiz Logo">
+            <span>AY <span>YILDIZ</span></span>
+        </div>
+
+        <div class="nav-links">
+            <a href="#" class="active">ANA SAYFA</a>
+            <a href="#servers">SUNUCULAR</a>
+            <a href="#store">MAĞAZA</a>
+            <a href="#rules">KURALLAR</a>
+            <a href="#staff">YETKİLİ</a>
+        </div>
+
+        <div class="nav-cta">
+            <a href="https://steamcommunity.com/openid/login" class="btn-login">
+                <i class="fa-brands fa-steam"></i> STEAM İLE GİRİŞ
+            </a>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <header class="hero">
+        <h1>AY YILDIZ RUST</h1>
+        <p>Türkiye'nin En Kaliteli ve En Adaletli Rust Sunucusu</p>
+
+        <div class="cta-buttons">
+            <a href="#store" class="btn">MAĞAZA</a>
+            <a href="AyYildizLauncher.zip" class="btn btn-outline" download>LAUNCHER İNDİR</a>
+        </div>
+    </header>
+
+    <!-- STATS BAR -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-number" id="player-count">136</div>
+            <div class="stat-label">OYUNCU AKTİF</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">1</div>
+            <div class="stat-label">SUNUCU</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">2026</div>
+            <div class="stat-label">KURULUŞ</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">%100</div>
+            <div class="stat-label">UPTIME</div>
+        </div>
+    </div>
+
+    <!-- SERVERS SECTION -->
+    <section id="servers" class="section">
+        <div class="section-header">
+            <h2 class="section-title">SUNUCULARIMIZ</h2>
+            <div class="section-subtitle">EN KALİTELİ OYUN DENEYİMİ</div>
+        </div>
+
+        <div class="servers-grid">
+            <!-- MAIN SERVER -->
+            <div class="server-card">
+                <div class="server-img">
+                    <div class="server-status">ONLINE</div>
+                </div>
+                <div class="server-content">
+                    <h3 class="server-name">AY YILDIZ [TR] MAIN</h3>
+                    <div class="server-meta">
+                        <span><i class="fa-solid fa-map"></i> Procedural Map</span>
+                        <span><i class="fa-solid fa-users"></i> 200 Kapasite</span>
+                        <span><i class="fa-solid fa-rotate"></i> Haftalık Wipe</span>
+                    </div>
+                    <a href="steam://connect/91.124.63.80:28025" class="btn btn-outline"
+                        style="width:100%; text-align:center;">BAĞLAN</a>
+                </div>
+            </div>
+
+            <!-- PRACTICE SERVER (Placeholder for looks) -->
+            <div class="server-card">
+                <div class="server-img" style="filter: grayscale(100%);">
+                    <div class="server-status" style="background:#555;">BAKIMDA</div>
+                </div>
+                <div class="server-content">
+                    <h3 class="server-name">AY YILDIZ [TR] PRACTICE</h3>
+                    <div class="server-meta">
+                        <span><i class="fa-solid fa-map"></i> Flat Map</span>
+                        <span><i class="fa-solid fa-users"></i> 100 Kapasite</span>
+                    </div>
+                    <button class="btn btn-outline"
+                        style="width:100%; opacity:0.5; cursor:not-allowed;">YAKINDA</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STAFF SECTION -->
+    <section id="staff" class="section" style="background: rgba(0,0,0,0.3);">
+        <div class="section-header">
+            <h2 class="section-title">YÖNETİM EKİBİ</h2>
+            <div class="section-subtitle">KURUCU VE GELİŞTİRİCİ</div>
+        </div>
+
+        <div class="staff-card">
+            <!-- Placeholder avatar or user's logo if no avatar provided -->
+            <img src="img/logo.png" alt="Mehmet Hilmi Özkan" class="staff-avatar">
+            <h3 class="staff-name">Mehmet Hilmi Özkan</h3>
+            <div class="staff-role">KURUCU & DEVELOPER</div>
+        </div>
+    </section>
+
+    <!-- DISCORD BANNER -->
+    <section class="section"
+        style="text-align: center; background: linear-gradient(rgba(88, 101, 242, 0.9), rgba(88, 101, 242, 0.7)), url('https://files.facepunch.com/paddy/20230803/header_august.jpg'); background-attachment: fixed; background-size: cover;">
+        <h2 class="section-title" style="color:white; text-shadow:none;">TOPLULUĞA KATIL</h2>
+        <p style="color:white; margin-bottom:30px; font-size:18px;">En son haberler, çekilişler ve destek için Discord
+            sunucumuza gelmeyi unutma!</p>
+        <a href="https://discord.gg/DKhSzfKFVX" target="_blank" class="btn"
+            style="background:white; color:#5865F2;">DISCORD'A GİT</a>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-col">
+                <div class="nav-brand" style="margin-bottom:20px;">
+                    <img src="img/logo.png" style="height:40px;">
+                    <span>AY <span>YILDIZ</span></span>
+                </div>
+                <p style="color:#666; font-size:14px;">Türkiye'nin en köklü ve kaliteli Rust topluluğu. Kesintisiz oyun
+                    keyfi ve adaletli yönetim.</p>
+            </div>
+
+            <div class="footer-col">
+                <h4>HIZLI LİNKLER</h4>
+                <div class="footer-links">
+                    <a href="#">Ana Sayfa</a>
+                    <a href="#servers">Sunucular</a>
+                    <a href="#store">Mağaza</a>
+                    <a href="AyYildizLauncher.zip">Launcher İndir</a>
+                </div>
+            </div>
+
+            <div class="footer-col">
+                <h4>TOPLULUK</h4>
+                <div class="footer-links">
+                    <a href="https://discord.gg/DKhSzfKFVX">Discord</a>
+                    <a href="#">Steam Grubu</a>
+                    <a href="#">Kurallar</a>
+                </div>
+            </div>
+
+            <div class="footer-col">
+                <h4>İLETİŞİM</h4>
+                <div class="footer-links">
+                    <a href="#">Destek Talebi</a>
+                    <a href="#">[email protected]</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="copyright">
+            &copy; 2026 Ay Yildiz Rust. Tüm hakları saklıdır.
+            <br>Designed by <strong>Mehmet Hilmi Özkan</strong>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+
+</html>
