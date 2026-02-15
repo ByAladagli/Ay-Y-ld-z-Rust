@@ -1,38 +1,43 @@
 @echo off
-title AY YILDIZ SITE GUNCELLEME ARACI
+title AY YILDIZ GITHUB YUKLEYICI
 color 0a
 cls
-
-echo ========================================================
-echo   AY YILDIZ RUST - SITE GUNCELLEME ARACI
-echo ========================================================
 echo.
-echo  1. Dosyalar Git'e ekleniyor...
-git init
+echo ==========================================
+echo   AY YILDIZ RUST - OTOMATIK YUKLEYICI
+echo ==========================================
+echo.
+cd /d "%~dp0"
+
+echo [1/4] Git hazirlaniyor...
+if not exist .git (
+    git init
+) 
+
+echo [2/4] Dosyalar paketleniyor...
 git add .
-git commit -m "Site ve Launcher Guncellemesi (v2.1)"
+git commit -m "Otomatik Guncelleme Agent Tarafindan" >nul 2>&1
 
-echo.
-echo  2. Uzak sunucu (GitHub) baglantisi kontrol ediliyor...
-git remote remove origin
+echo [3/4] Uzak sunucu ayarlaniyor...
+git remote remove origin >nul 2>&1
 git remote add origin https://github.com/ByAladagli/Ay-Y-ld-z-Rust.git
 
 echo.
-echo  3. Dosyalar YUKLENIYOR...
-echo  (Giris penceresi acilirsa bilgilerinizi girin)
+echo [4/4] GITHUB'A YUKLENIYOR...
+echo Lutfen acilan pencerede GitHub hesabiniza giris yapin.
 echo.
 git branch -M main
 git push -u origin main --force
 
-echo.
-echo ========================================================
 if %errorlevel% == 0 (
-    echo   ISLEM BASARILI!
-    echo   Site 1-2 dakika icinde guncellenecektir.
-    echo   (Hem GitHub Pages hem Netlify guncellenir)
+    color 0b
+    echo.
+    echo   ISLEM TAMAMLANDI!
+    echo   Web siteniz guncellendi.
 ) else (
-    echo   HATA! Yukleme yapilamadi. Internetinizi kontrol edin.
+    color 0c
+    echo.
+    echo   HATA OLUSTU! Lutfen interneti veya giris bilgilerini kontrol edin.
 )
-echo ========================================================
 echo.
 pause
