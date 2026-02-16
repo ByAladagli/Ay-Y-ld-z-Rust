@@ -292,6 +292,66 @@ nav {
 
 .server-meta i { color: var(--primary); }
 
+/* RULES */
+.rules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+}
+
+.rule-card {
+    background: var(--dark-surface);
+    border: 1px solid var(--border);
+    padding: 30px;
+    border-radius: 8px;
+    display: flex;
+    gap: 20px;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.rule-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--primary);
+    opacity: 0.5;
+    transition: var(--transition);
+}
+
+.rule-card:hover {
+    transform: translateX(5px);
+    border-color: var(--primary);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.rule-card:hover::before {
+    opacity: 1;
+    width: 5px;
+}
+
+.rule-icon {
+    font-size: 28px;
+    color: var(--primary);
+    min-width: 40px;
+}
+
+.rule-content h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: var(--text-white);
+}
+
+.rule-content p {
+    font-size: 14px;
+    color: var(--text-gray);
+    line-height: 1.5;
+}
+
 /* STAFF */
 .staff-card {
     background: var(--dark-surface);
