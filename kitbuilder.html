@@ -56,10 +56,28 @@
             <main class="editor-area">
                 <!-- Top Bar: General Settings -->
                 <header class="top-bar">
+                    <!-- Kit Management Section -->
+                    <div class="kit-management-bar">
+                        <div class="kit-selector-group">
+                            <label>Aktif Kit:</label>
+                            <select id="kitSelector">
+                                <!-- Options populated by JS -->
+                            </select>
+                        </div>
+                        <div class="kit-actions-group">
+                            <button id="btnNewKit" class="btn secondary small" title="Yeni Kit">+</button>
+                            <button id="btnCopyKit" class="btn secondary small" title="Kopyala">Kopyala</button>
+                            <button id="btnRenameKit" class="btn secondary small"
+                                title="Yeniden Adlandır">Adlandır</button>
+                            <button id="btnDeleteKit" class="btn danger small" title="Sil">Sil</button>
+                        </div>
+                    </div>
+
+                    <!-- Current Kit Details -->
                     <div class="kit-settings">
-                        <div class="form-group">
-                            <label for="kitName">Kit Adı</label>
-                            <input type="text" id="kitName" placeholder="Örn: vip_kit">
+                        <div class="form-group" style="flex: 2;">
+                            <label for="kitDescription">Açıklama</label>
+                            <input type="text" id="kitDescription" placeholder="Kit açıklaması...">
                         </div>
                         <div class="form-group">
                             <label for="kitPermission">Yetki (Permission)</label>
@@ -99,7 +117,8 @@
                 <footer class="kit-bottom-bar">
                     <div class="actions">
                         <button id="bCopy" class="btn primary">JSON Kopyala</button>
-                        <button id="bImport" class="btn secondary">İçe Aktar (JSON)</button>
+                        <button id="bImport" class="btn secondary">İçe Aktar (Dosya)</button>
+                        <input type="file" id="fileInput" accept=".json,.data,.txt" style="display: none;">
                         <button id="bClear" class="btn danger">Temizle</button>
                     </div>
                     <div class="json-preview">

@@ -7,13 +7,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const jsonOutput = document.getElementById('jsonOutput');
     const tabBtns = document.querySelectorAll('.tab-btn');
 
+    // Kit Management Elements
+    const kitSelector = document.getElementById('kitSelector');
+    const btnNewKit = document.getElementById('btnNewKit');
+    const btnCopyKit = document.getElementById('btnCopyKit');
+    const btnRenameKit = document.getElementById('btnRenameKit');
+    const btnDeleteKit = document.getElementById('btnDeleteKit');
+
     // Kit Settings Inputs
-    const kitNameInput = document.getElementById('kitName');
     const kitPermissionInput = document.getElementById('kitPermission');
     const kitImageInput = document.getElementById('kitImage');
     const kitCooldownInput = document.getElementById('kitCooldown');
     const kitMaxInput = document.getElementById('kitMax');
-    // const kitDescriptionInput = document.getElementById('kitDescription'); // Optional
+    const kitDescriptionInput = document.getElementById('kitDescription');
 
     // Buttons
     const btnCopy = document.getElementById('bCopy');
@@ -23,192 +29,166 @@ document.addEventListener('DOMContentLoaded', () => {
     // State
     let allItems = [];
     let currentTab = 'items'; // items, wear, belt
-    let kitData = {
-        name: '',
-        permission: '',
-        image: '',
-        description: '',
-        cooldown: 3600,
-        max: 0,
-        items: [],
-        wear: [],
-        belt: []
+    let currentCategory = 'all';
+
+    // Multi-Kit State
+    let kits = {}; // Object to store all kits: { "kitName": { ...data... } }
+    let currentKitName = null;
+
+    // Categories sorted by the itemlist_full.json data
+    const categories = {
+        all: "All",
+        Ammunition: "Ammunition",
+        Attire: "Attire",
+        Component: "Component",
+        Construction: "Construction",
+        Electrical: "Electrical",
+        Food: "Food",
+        Fun: "Fun",
+        Items: "Items",
+        Medical: "Medical",
+        Misc: "Misc",
+        Resources: "Resources",
+        Tool: "Tool",
+        Traps: "Traps",
+        Weapon: "Weapon"
     };
 
-    // Initialize
-    loadItems();
-    setupEventListeners();
+    function getCategory(item) {
+        if (!item || !item.category) return 'Misc';
+        return item.category; // Strict usage of server-provided category
+    }
 
-    // -------------------------------------------------------------------------
-    // Data Loading & Rendering
-    // -------------------------------------------------------------------------
-    async function loadItems() {
+    // Initialize
+    async function init() {
         try {
             const response = await fetch('rust_items.json');
-            allItems = await response.json();
-            renderItems(allItems);
+            const data = await response.json();
+
+            allItems = data.map(item => {
+                item.shortName = item.shortName || item.shortname || "";
+                item.category = getCategory(item);
+                return item;
+            });
+
+            // Load from LocalStorage
+            loadFromLocalStorage();
+
+            setupEventListeners();
+            renderCategories();
+            filterAndRenderItems();
+
+            if (Object.keys(kits).length === 0) {
+                createNewKit('default');
+            } else {
+                if (!currentKitName) currentKitName = Object.keys(kits)[0];
+                switchKit(currentKitName);
+            }
         } catch (error) {
             console.error('Veri yüklenemedi:', error);
-            itemList.innerHTML = '<p style="color:red; text-align:center;">Eşya veritabanı yüklenemedi (rust_items.json).</p>';
+            itemList.innerHTML = '<p style="color:red; text-align:center;">Veri yüklenemedi (rust_items.json).</p>';
         }
+    }
+
+    function saveToLocalStorage() {
+        localStorage.setItem('rust_kits_data', JSON.stringify({
+            kits: kits,
+            currentKitName: currentKitName
+        }));
+    }
+
+    function loadFromLocalStorage() {
+        const saved = localStorage.getItem('rust_kits_data');
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                kits = data.kits || {};
+                currentKitName = data.currentKitName || null;
+            } catch (e) {
+                console.error("LocalStorage load error", e);
+            }
+        }
+    }
+
+    function renderCategories() {
+        categoryFilter.innerHTML = '';
+        Object.keys(categories).forEach(key => {
+            const btn = document.createElement('button');
+            btn.className = `filter-btn ${key === currentCategory ? 'active' : ''}`;
+            btn.dataset.category = key;
+            btn.textContent = categories[key];
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentCategory = key;
+                filterAndRenderItems();
+            });
+            categoryFilter.appendChild(btn);
+        });
+    }
+
+    function filterAndRenderItems() {
+        const term = itemSearch.value.toLowerCase();
+        const filtered = allItems.filter(item => {
+            const name = (item.displayName || "").toLowerCase();
+            const sname = (item.shortName || "").toLowerCase();
+            const matchesSearch = name.includes(term) || sname.includes(term);
+            const matchesCategory = currentCategory === 'all' || item.category === currentCategory;
+            return matchesSearch && matchesCategory;
+        });
+        renderItems(filtered);
+    }
+
+    function getItemIcon(item) {
+        const sname = item.shortName || item.shortname || "";
+        const localPath = `icons/${sname}.png`;
+        const dataUrl = item.iconUrl || "";
+        const rustLabsUrl = `https://rustlabs.com/img/items180/${sname}.png`;
+        return { localPath, dataUrl, rustLabsUrl };
     }
 
     function renderItems(items) {
         itemList.innerHTML = '';
         const fragment = document.createDocumentFragment();
-
-        // Limit rendering for performance if list is huge, simpler for now
-        // Or render generic categories
-
         items.forEach(item => {
             const el = document.createElement('div');
             el.className = 'item-card';
             el.draggable = true;
             el.dataset.shortname = item.shortName;
             el.dataset.name = item.displayName;
-            el.dataset.id = item.id;
 
-            // Icon handling: try local first
-            // Note: In real app we might fallback to remote URL if local missing
-            // For now assuming local icons copied from rust_icons
-            const iconPath = `icons/${item.shortName}.png`;
-
+            const icon = getItemIcon(item);
             el.innerHTML = `
-                <img src="${iconPath}" alt="${item.displayName}" loading="lazy" onerror="this.src='https://rustlabs.com/img/items180/${item.shortName}.png'">
+                <img src="${icon.localPath}" alt="${item.displayName}" loading="lazy" 
+                    onerror="if(this.src.includes('icons/')) { this.src='${icon.dataUrl || icon.rustLabsUrl}'; } else if(!this.src.includes('rustlabs')) { this.src='${icon.rustLabsUrl}'; }">
                 <span>${item.displayName}</span>
             `;
 
             el.addEventListener('dragstart', handleDragStart);
-            el.addEventListener('click', () => addItemToKit(item)); // Click to add support
-
+            el.addEventListener('click', () => addItemToKit(item));
             fragment.appendChild(el);
         });
-
         itemList.appendChild(fragment);
-    }
-
-    // -------------------------------------------------------------------------
-    // Event Listeners
-    // -------------------------------------------------------------------------
-    function setupEventListeners() {
-        // Search
-        itemSearch.addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtered = allItems.filter(item =>
-                item.displayName.toLowerCase().includes(term) ||
-                item.shortName.toLowerCase().includes(term)
-            );
-            renderItems(filtered);
-        });
-
-        // Tabs
-        tabBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                tabBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentTab = btn.dataset.tab;
-                renderKitContent();
-            });
-        });
-
-        // Drop Zone
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('drag-over');
-        });
-
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('drag-over');
-        });
-
-        dropZone.addEventListener('drop', handleDrop);
-
-        // Sidebar Categories (Simple implementation)
-        // Ideally we need categories in JSON. If not, we can fuzzy match or skip.
-        // For now, "All" is enough given the search bar is powerful.
-
-        // Settings Inputs
-        const inputs = [kitNameInput, kitPermissionInput, kitImageInput, kitCooldownInput, kitMaxInput];
-        inputs.forEach(input => {
-            input.addEventListener('input', updateKitDataFromInputs);
-        });
-
-        // Buttons
-        btnCopy.addEventListener('click', copyJSON);
-        btnClear.addEventListener('click', clearKit);
-        btnImport.addEventListener('click', importJSON);
-    }
-
-    // -------------------------------------------------------------------------
-    // Drag & Drop Logic
-    // -------------------------------------------------------------------------
-    function handleDragStart(e) {
-        const shortname = e.currentTarget.dataset.shortname;
-        e.dataTransfer.setData('text/plain', shortname);
-    }
-
-    function handleDrop(e) {
-        e.preventDefault();
-        dropZone.classList.remove('drag-over');
-        const shortname = e.dataTransfer.getData('text/plain');
-
-        const item = allItems.find(i => i.shortName === shortname);
-        if (item) {
-            addItemToKit(item);
-        }
-    }
-
-    // -------------------------------------------------------------------------
-    // Kit Management
-    // -------------------------------------------------------------------------
-    function addItemToKit(item) {
-        const newItem = {
-            shortname: item.shortName,
-            displayName: item.displayName, // kept for UI, maybe not strict JSON
-            amount: 1,
-            skinid: 0,
-            activeInfo: item // store full ref if needed
-        };
-
-        // Add to current active tab list
-        kitData[currentTab].push(newItem);
-        renderKitContent();
-        updateJSON();
-    }
-
-    function removeItemFromKit(index) {
-        kitData[currentTab].splice(index, 1);
-        renderKitContent();
-        updateJSON();
-    }
-
-    function updateItemProperty(index, prop, value) {
-        kitData[currentTab][index][prop] = value;
-        updateJSON();
     }
 
     function renderKitContent() {
         dropZone.innerHTML = '';
-        const items = kitData[currentTab];
+        if (!currentKitName || !kits[currentKitName]) return;
 
+        const items = kits[currentKitName][currentTab] || [];
         if (items.length === 0) {
-            dropZone.innerHTML = `
-                <div class="empty-state">
-                    <p>${currentTab.toUpperCase()} listesi boş. Eşya ekleyin.</p>
-                </div>`;
+            dropZone.innerHTML = `<div class="empty-state"><p>${currentTab.toUpperCase()} listesi boş.</p></div>`;
             return;
         }
 
         items.forEach((item, index) => {
             const row = document.createElement('div');
             row.className = 'kit-item-row';
-
-            const iconPath = `icons/${item.shortname}.png`;
-
+            const icon = getItemIcon(item);
             row.innerHTML = `
-                <img src="${iconPath}" onerror="this.src='https://rustlabs.com/img/items180/${item.shortname}.png'">
+                <img src="${icon.localPath}" onerror="if(this.src.includes('icons/')) { this.src='${icon.dataUrl || icon.rustLabsUrl}'; } else if(!this.src.includes('rustlabs')) { this.src='${icon.rustLabsUrl}'; }">
                 <div class="kit-item-info">
-                    <span class="kit-item-name">${item.displayName || item.shortname}</span>
+                    <span class="kit-item-name">${item.customName || item.displayName || item.shortname}</span>
                     <span class="kit-item-shortname">${item.shortname}</span>
                 </div>
                 <div class="kit-item-controls">
@@ -231,52 +211,170 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Global scope wrappers for inline onclicks
-    window.removeKitItem = (index) => removeItemFromKit(index);
-    window.updateItemAmount = (index, val) => updateItemProperty(index, 'amount', parseInt(val));
-    window.updateItemSkin = (index, val) => updateItemProperty(index, 'skinid', parseInt(val)); // Note: skinid might need to be ulong/string
-    window.updateItemName = (index, val) => updateItemProperty(index, 'customName', val);
+    function setupEventListeners() {
+        itemSearch.addEventListener('input', filterAndRenderItems);
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentTab = btn.dataset.tab;
+                renderKitContent();
+            });
+        });
 
-    // -------------------------------------------------------------------------
-    // JSON Handling
-    // -------------------------------------------------------------------------
-    function updateKitDataFromInputs() {
-        kitData.name = kitNameInput.value;
-        kitData.permission = kitPermissionInput.value;
-        kitData.image = kitImageInput.value;
-        kitData.cooldown = parseInt(kitCooldownInput.value) || 0;
-        kitData.max = parseInt(kitMaxInput.value) || 0;
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+        dropZone.addEventListener('drop', handleDrop);
+
+        const inputs = [kitPermissionInput, kitImageInput, kitCooldownInput, kitMaxInput, kitDescriptionInput];
+        inputs.forEach(input => {
+            if (input) input.addEventListener('input', updateCurrentKitDataFromInputs);
+        });
+
+        kitSelector.addEventListener('change', (e) => switchKit(e.target.value));
+        btnNewKit.addEventListener('click', promptNewKit);
+        btnCopyKit.addEventListener('click', promptCopyKit);
+        btnRenameKit.addEventListener('click', promptRenameKit);
+        btnDeleteKit.addEventListener('click', deleteCurrentKit);
+
+        btnCopy.addEventListener('click', copyJSON);
+        btnClear.addEventListener('click', clearCurrentKit);
+        btnImport.addEventListener('click', importJSON);
+    }
+
+    function createNewKit(name, data = null) {
+        if (kits[name]) { alert('Bu isimde bir kit zaten var!'); return false; }
+        kits[name] = data || {
+            name: name, permission: `kits.${name}`, image: '', description: '',
+            cooldown: 0, max: 0, items: [], wear: [], belt: []
+        };
+        updateKitSelector();
+        switchKit(name);
+        saveToLocalStorage();
+        return true;
+    }
+
+    function switchKit(name) {
+        if (!kits[name]) return;
+        currentKitName = name;
+        kitSelector.value = name;
+        const kit = kits[name];
+        if (kitPermissionInput) kitPermissionInput.value = kit.permission || '';
+        if (kitImageInput) kitImageInput.value = kit.image || '';
+        if (kitCooldownInput) kitCooldownInput.value = kit.cooldown || 0;
+        if (kitMaxInput) kitMaxInput.value = kit.max || 0;
+        if (kitDescriptionInput) kitDescriptionInput.value = kit.description || '';
+        renderKitContent();
         updateJSON();
+        saveToLocalStorage();
+    }
+
+    function updateKitSelector() {
+        kitSelector.innerHTML = '';
+        Object.keys(kits).forEach(name => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            kitSelector.appendChild(option);
+        });
+        if (currentKitName) kitSelector.value = currentKitName;
+    }
+
+    function deleteCurrentKit() {
+        if (Object.keys(kits).length <= 1) { alert('En az bir kit kalmalı!'); return; }
+        if (confirm(`"${currentKitName}" kitini silmek istediğinize emin misiniz?`)) {
+            delete kits[currentKitName];
+            switchKit(Object.keys(kits)[0]);
+            updateKitSelector();
+            saveToLocalStorage();
+        }
+    }
+
+    function promptRenameKit() {
+        const newName = prompt('Yeni isim:', currentKitName);
+        if (newName && newName !== currentKitName) {
+            if (kits[newName]) { alert('Bu isim zaten kullanılıyor.'); return; }
+            kits[newName] = kits[currentKitName];
+            kits[newName].name = newName;
+            delete kits[currentKitName];
+            currentKitName = newName;
+            updateKitSelector();
+            switchKit(newName);
+            saveToLocalStorage();
+        }
+    }
+
+    function promptCopyKit() {
+        const newName = prompt('Kopyalanacak yeni kit adı:', `${currentKitName}_copy`);
+        if (newName) {
+            const copyData = JSON.parse(JSON.stringify(kits[currentKitName]));
+            copyData.name = newName;
+            createNewKit(newName, copyData);
+        }
+    }
+
+    function promptNewKit() {
+        const name = prompt('Yeni kit adı:');
+        if (name) createNewKit(name);
+    }
+
+    function handleDragStart(e) { e.dataTransfer.setData('text/plain', e.currentTarget.dataset.shortname); }
+    function handleDrop(e) {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        const shortname = e.dataTransfer.getData('text/plain');
+        const item = allItems.find(i => i.shortName === shortname);
+        if (item) addItemToKit(item);
+    }
+
+    function addItemToKit(item) {
+        if (!currentKitName) return;
+        const newItem = {
+            shortname: item.shortName,
+            displayName: item.displayName,
+            amount: 1,
+            skinid: 0,
+            iconUrl: item.iconUrl || ""
+        };
+        kits[currentKitName][currentTab].push(newItem);
+        renderKitContent();
+        updateJSON();
+        saveToLocalStorage();
+    }
+
+    window.removeKitItem = (index) => { if (!currentKitName) return; kits[currentKitName][currentTab].splice(index, 1); renderKitContent(); updateJSON(); saveToLocalStorage(); };
+    window.updateItemAmount = (index, val) => { if (!currentKitName) return; kits[currentKitName][currentTab][index].amount = parseInt(val) || 1; updateJSON(); saveToLocalStorage(); };
+    window.updateItemSkin = (index, val) => { if (!currentKitName) return; kits[currentKitName][currentTab][index].skinid = parseInt(val) || 0; updateJSON(); saveToLocalStorage(); };
+    window.updateItemName = (index, val) => { if (!currentKitName) return; kits[currentKitName][currentTab][index].customName = val; updateJSON(); saveToLocalStorage(); };
+
+    function updateCurrentKitDataFromInputs() {
+        if (!currentKitName) return;
+        const kit = kits[currentKitName];
+        kit.permission = kitPermissionInput.value;
+        kit.image = kitImageInput.value;
+        kit.description = kitDescriptionInput.value;
+        kit.cooldown = parseInt(kitCooldownInput.value) || 0;
+        kit.max = parseInt(kitMaxInput.value) || 0;
+        updateJSON();
+        saveToLocalStorage();
     }
 
     function updateJSON() {
-        // Construct the output object to match common Rust Kits plugins
-        // Structure may vary, currently aiming for a generic standard
-
-        const output = {
-            name: kitData.name,
-            image: kitData.image,
-            description: kitData.description,
-            permission: kitData.permission,
-            cooldown: kitData.cooldown,
-            max: kitData.max,
-            items: kitData.items.map(cleanItem),
-            wear: kitData.wear.map(cleanItem),
-            belt: kitData.belt.map(cleanItem)
-        };
-
+        const output = {};
+        Object.keys(kits).forEach(key => {
+            const k = kits[key];
+            output[key] = {
+                name: k.name, image: k.image, description: k.description,
+                permission: k.permission, cooldown: k.cooldown, max: k.max,
+                items: k.items.map(cleanItem), wear: k.wear.map(cleanItem), belt: k.belt.map(cleanItem)
+            };
+        });
         jsonOutput.textContent = JSON.stringify(output, null, 4);
     }
 
     function cleanItem(i) {
-        // Return only relevant fields for JSON
-        const obj = {
-            shortname: i.shortname,
-            amount: i.amount,
-            skinid: i.skinid
-        };
+        const obj = { shortname: i.shortname, amount: i.amount, skinid: i.skinid };
         if (i.customName) obj.name = i.customName;
-        // Add ammo/mods if we implement that later
         return obj;
     }
 
@@ -286,50 +384,70 @@ document.addEventListener('DOMContentLoaded', () => {
         window.getSelection().removeAllRanges();
         window.getSelection().addRange(range);
         document.execCommand('copy');
-        window.getSelection().removeAllRanges();
-
         const originalText = btnCopy.textContent;
         btnCopy.textContent = 'Kopyalandı!';
         setTimeout(() => btnCopy.textContent = originalText, 2000);
     }
 
-    function clearKit() {
-        if (confirm('Tüm kit içeriği silinecek?')) {
-            kitData.items = [];
-            kitData.wear = [];
-            kitData.belt = [];
-            renderKitContent();
-            updateJSON();
+    function clearCurrentKit() {
+        if (!currentKitName) return;
+        if (confirm(`"${currentKitName}" temizlensin mi?`)) {
+            kits[currentKitName].items = []; kits[currentKitName].wear = []; kits[currentKitName].belt = [];
+            renderKitContent(); updateJSON(); saveToLocalStorage();
         }
     }
 
-    function importJSON() {
-        const input = prompt('JSON yapıştırın:');
-        if (!input) return;
+    const fileInput = document.getElementById('fileInput');
+    function importJSON() { fileInput.click(); }
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => { processImportedData(event.target.result); fileInput.value = ''; };
+        reader.readAsText(file);
+    });
 
+    function processImportedData(jsonString) {
         try {
-            const data = JSON.parse(input);
-            kitData.name = data.name || '';
-            kitData.image = data.image || '';
-            kitData.permission = data.permission || '';
-            kitData.cooldown = data.cooldown || 0;
-            kitData.max = data.max || 0;
+            const data = JSON.parse(jsonString);
+            let sourceKits = data._kits || data;
+            let newKits = {};
 
-            kitData.items = data.items || [];
-            kitData.wear = data.wear || [];
-            kitData.belt = data.belt || [];
+            Object.keys(sourceKits).forEach(key => {
+                const k = sourceKits[key];
+                if (typeof k !== 'object') return;
+                newKits[key] = {
+                    name: k.Name || k.name || key,
+                    image: k.KitImage || k.image || '',
+                    description: k.Description || k.description || '',
+                    permission: k.RequiredPermission || k.permission || '',
+                    cooldown: k.Cooldown || k.cooldown || 0,
+                    max: k.MaximumUses || k.max || 0,
+                    items: (k.MainItems || k.items || []).map(mapItem),
+                    wear: (k.WearItems || k.wear || []).map(mapItem),
+                    belt: (k.BeltItems || k.belt || []).map(mapItem)
+                };
+            });
 
-            // Update Inputs
-            kitNameInput.value = kitData.name;
-            kitPermissionInput.value = kitData.permission;
-            kitImageInput.value = kitData.image;
-            kitCooldownInput.value = kitData.cooldown;
-            kitMaxInput.value = kitData.max;
+            if (Object.keys(newKits).length === 0) throw new Error("No kits found");
 
-            renderKitContent();
-            updateJSON();
-        } catch (e) {
-            alert('Geçersiz JSON formatı!');
-        }
+            kits = newKits;
+            updateKitSelector();
+            switchKit(Object.keys(kits)[0]);
+            saveToLocalStorage();
+            alert(`${Object.keys(kits).length} kit yüklendi.`);
+        } catch (e) { alert('JSON hatası: ' + e.message); }
     }
+
+    function mapItem(i) {
+        return {
+            shortname: i.Shortname || i.shortname || '',
+            amount: i.Amount || i.amount || 1,
+            skinid: i.Skin || i.skinid || 0,
+            customName: i.DisplayName || i.name || '',
+            iconUrl: i.iconUrl || ""
+        };
+    }
+
+    init();
 });
