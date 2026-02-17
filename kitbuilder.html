@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AY YILDIZ RUST | Kit Builder</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="kitbuilder.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="img/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav>
+        <div class="nav-brand">
+            <img src="img/logo.png" alt="Ay Yildiz Logo">
+            <span>AY <span>YILDIZ</span></span>
+        </div>
+
+        <div class="nav-links">
+            <a href="index.html">ANA SAYFA</a>
+            <a href="index.html#servers">SUNUCULAR</a>
+            <a href="kitbuilder.html" class="active">KİT BUILDER</a>
+            <a href="index.html#store">MAĞAZA</a>
+            <a href="index.html#rules">KURALLAR</a>
+            <a href="index.html#staff">YETKİLİ</a>
+        </div>
+
+        <div class="nav-cta">
+            <a href="https://steamcommunity.com/openid/login" class="btn-login">
+                <i class="fa-brands fa-steam"></i> STEAM İLE GİRİŞ
+            </a>
+        </div>
+    </nav>
+
+    <div class="kit-builder-page">
+        <div class="app-container">
+            <!-- Sidebar: Item Selector -->
+            <aside class="sidebar">
+                <div class="search-container">
+                    <input type="text" id="itemSearch" placeholder="Eşya Ara (İsim veya Shortname)...">
+                </div>
+                <div class="category-filter" id="categoryFilter">
+                    <button class="filter-btn active" data-category="all">Tümü</button>
+                </div>
+                <div class="item-list" id="itemList">
+                    <!-- Items will be injected here via JS -->
+                </div>
+            </aside>
+
+            <!-- Main Content: Kit Editor -->
+            <main class="editor-area">
+                <!-- Top Bar: General Settings -->
+                <header class="top-bar">
+                    <div class="kit-settings">
+                        <div class="form-group">
+                            <label for="kitName">Kit Adı</label>
+                            <input type="text" id="kitName" placeholder="Örn: vip_kit">
+                        </div>
+                        <div class="form-group">
+                            <label for="kitPermission">Yetki (Permission)</label>
+                            <input type="text" id="kitPermission" placeholder="kits.vip">
+                        </div>
+                        <div class="form-group">
+                            <label for="kitImage">Resim URL</label>
+                            <input type="text" id="kitImage" placeholder="https://...">
+                        </div>
+                        <div class="form-group">
+                            <label for="kitCooldown">Cooldown (Sn)</label>
+                            <input type="number" id="kitCooldown" value="3600">
+                        </div>
+                        <div class="form-group">
+                            <label for="kitMax">Max Kullanım</label>
+                            <input type="number" id="kitMax" value="0">
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Kit Content Slots -->
+                <div class="kit-content">
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="items">Eşyalar (Main)</button>
+                        <button class="tab-btn" data-tab="wear">Giyim (Wear)</button>
+                        <button class="tab-btn" data-tab="belt">Kemer (Belt)</button>
+                    </div>
+
+                    <div class="drop-zone" id="kitDropZone">
+                        <div class="empty-state">
+                            <p>Eşyaları buraya sürükleyip bırakın</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- JSON Output Preview & Actions -->
+                <footer class="kit-bottom-bar">
+                    <div class="actions">
+                        <button id="bCopy" class="btn primary">JSON Kopyala</button>
+                        <button id="bImport" class="btn secondary">İçe Aktar (JSON)</button>
+                        <button id="bClear" class="btn danger">Temizle</button>
+                    </div>
+                    <div class="json-preview">
+                        <pre id="jsonOutput">{}</pre>
+                    </div>
+                </footer>
+            </main>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-col">
+                <div class="nav-brand" style="margin-bottom:20px;">
+                    <img src="img/logo.png" style="height:40px;">
+                    <span>AY <span>YILDIZ</span></span>
+                </div>
+                <p style="color:#666; font-size:14px;">Türkiye'nin en köklü ve kaliteli Rust topluluğu. Kesintisiz oyun
+                    keyfi ve adaletli yönetim.</p>
+            </div>
+
+            <div class="footer-col">
+                <h4>HIZLI LİNKLER</h4>
+                <div class="footer-links">
+                    <a href="index.html">Ana Sayfa</a>
+                    <a href="index.html#servers">Sunucular</a>
+                    <a href="index.html#store">Mağaza</a>
+                    <a href="AyYildizLauncher.zip">Launcher İndir</a>
+                </div>
+            </div>
+
+            <div class="footer-col">
+                <h4>TOPLULUK</h4>
+                <div class="footer-links">
+                    <a href="https://discord.gg/DKhSzfKFVX">Discord</a>
+                    <a href="#">Steam Grubu</a>
+                    <a href="index.html#rules">Kurallar</a>
+                </div>
+            </div>
+
+            <div class="footer-col">
+                <h4>İLETİŞİM</h4>
+                <div class="footer-links">
+                    <a href="#">Destek Talebi</a>
+                    <a href="#">[email protected]</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="copyright">
+            &copy; 2026 Ay Yildiz Rust. Tüm hakları saklıdır.
+            <br>Designed by <strong>Mehmet Hilmi Özkan</strong>
+        </div>
+    </footer>
+
+    <script src="kitbuilder.js"></script>
+</body>
+
+</html>
