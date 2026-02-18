@@ -11,8 +11,10 @@
 
 .app-container {
     display: flex;
-    height: calc(100vh - 100px);
-    overflow: hidden;
+    min-height: calc(100vh - 100px);
+    /* Allow page to scroll if content is tall */
+    height: auto;
+    overflow: visible;
 }
 
 /* Sidebar */
@@ -23,6 +25,10 @@
     display: flex;
     flex-direction: column;
     padding: 1.5rem;
+    /* Make sidebar sticky so it stays visible while scrolling long kit content */
+    position: sticky;
+    top: 100px;
+    height: calc(100vh - 100px);
 }
 
 .search-container input {
@@ -258,6 +264,8 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+    /* Force a minimum height so it doesn't get squashed */
+    min-height: 600px;
 }
 
 .drop-zone.drag-over {
