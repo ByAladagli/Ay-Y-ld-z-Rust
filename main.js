@@ -1,23 +1,55 @@
-// Simulate Real-Time Player Count
+// Real-Time Server Stats with BattleMetrics API
 const statusEl = document.getElementById('player-count');
-let count = 136; // Start with the number from the user's initial request
+const serverStatusEl = document.getElementById('server-status');
+const capacityEl = document.getElementById('server-capacity');
 
-function updatePlayerCount() {
-    // Fluctuate count slightly to look alive
-    const change = Math.floor(Math.random() * 5) - 2; // -2 to +2
-    count += change;
+// Server Info
+const SERVER_IP = '91.124.63.80';
+const SERVER_PORT = '28025';
 
-    // Limits
-    if (count > 200) count = 200;
-    if (count < 80) count = 80;
+async function fetchServerStats() {
+    try {
+        // Using BattleMetrics API to find the server by IP and Port
+        const response = await fetch(`https://api.battlemetrics.com/servers?filter[ip]=${SERVER_IP}&filter[port]=${SERVER_PORT}`);
+        const data = await response.json();
 
-    // Update ONLY the number for the new design
-    statusEl.innerText = count;
+        if (data && data.data && data.data.length > 0) {
+            const server = data.data[0];
+            const players = server.attributes.players;
+            const maxPlayers = server.attributes.maxPlayers;
+            const status = server.attributes.status; // 'online' or 'offline'
+
+            // Update Player Count
+            statusEl.innerText = players;
+
+            // Update Capacity
+            if (capacityEl) capacityEl.innerText = maxPlayers;
+
+            // Update Status Badge
+            if (serverStatusEl) {
+                if (status === 'online') {
+                    serverStatusEl.innerText = 'ONLINE';
+                    serverStatusEl.style.background = '#28a745'; // Green
+                    serverStatusEl.classList.remove('offline');
+                } else {
+                    serverStatusEl.innerText = 'OFFLINE';
+                    serverStatusEl.style.background = '#dc3545'; // Red
+                    serverStatusEl.classList.add('offline');
+                }
+            }
+        } else {
+            console.warn('Server not found on BattleMetrics, using default/cached values.');
+            // Fallback strategy if needed, or just leave defaults
+        }
+    } catch (error) {
+        console.error('Error fetching server stats:', error);
+        // On error, maybe show '?' or keep default
+    }
 }
 
-// Update every 3 seconds
-setInterval(updatePlayerCount, 3000);
-updatePlayerCount();
+// Fetch immediately and then every 30 seconds
+fetchServerStats();
+setInterval(fetchServerStats, 30000);
 
 // Navbar Scroll Effect
 window.addEventListener('scroll', () => {
