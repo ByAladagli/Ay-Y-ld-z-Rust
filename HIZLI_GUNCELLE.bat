@@ -11,6 +11,8 @@ echo  Giris yapmaniz gerekirse lutfen acilan pencerede yapin.
 echo.
 
 cd /d "%~dp0"
+git add .
+git commit -m "SEO ve Site Haritasi Guncellemesi"
 git remote remove origin >nul 2>&1
 git remote add origin https://github.com/ByAladagli/Ay-Y-ld-z-Rust.git
 git branch -M main
